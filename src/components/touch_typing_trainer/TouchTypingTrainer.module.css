@@ -1,0 +1,25 @@
+.timer {
+    text-align: center;
+}
+
+.textField {
+    text-align: center;
+}
+
+.chars {
+    font-size: 16pt;
+    max-lines: 4;
+}
+
+.charsOut {
+    color: gray;
+}
+
+.charsIn {
+
+}
+
+.currChar {
+    background-color: rgba(0, 191, 255, 0.8);
+    color: white;
+}
