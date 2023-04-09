@@ -10,7 +10,7 @@ function TouchTypingTrainer({lessonText, maxTime}) {
     const [isShowResult, setIsShowResult] = useState(false);
     // Chars
     const [leftPadding, setLeftPadding] = useState(
-        new Array(40).fill( "\u00A0").join('')
+        new Array(35).fill("\u00A0").join('')
     );
     const [outgoingChars, setOutgoingChars] = useState('');
     const [currentChar, setCurrentChar] = useState(lessonText.charAt(0));
@@ -109,7 +109,7 @@ function TouchTypingTrainer({lessonText, maxTime}) {
                 <br/>
                 <button onClick={handleLessonRestart}>Restart</button>
             </ModalWindow>
-            <div className={cl.textField}>
+            <div className={cl.trainer}>
                 {isLessonActive
                     ?
                     <>
@@ -118,11 +118,11 @@ function TouchTypingTrainer({lessonText, maxTime}) {
                         </div>
                         <p className={cl.chars}>
                         <span className={cl.charsOut}>
-                            {(leftPadding + outgoingChars).slice(-39)}
+                            {(leftPadding + outgoingChars).slice(-35)}
                         </span>
                             <span className={cl.currChar}>{currentChar}</span>
                             <span
-                                className={cl.charsIn}>{incomingChars.substring(0, 40)}</span>
+                                className={cl.charsIn}>{incomingChars.substring(0, 34)}</span>
                         </p>
                     </>
                     : <span>Press SPACE to start</span>}
