@@ -24,3 +24,7 @@
     background-color: rgba(0, 191, 255, 0.8);
     color: white;
 }
+
+.currCharError {
+    background-color: rgba(220, 20, 60, 0.8);
+}

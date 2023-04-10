@@ -4,7 +4,7 @@ import useKeyPress from "../../hooks/useKeyPress";
 import ModalWindow from "../ui/modal_window/ModalWindow";
 import {getFormattedTimeString} from "../../utils/time";
 
-function TouchTypingTrainer({lessonText, maxTime}) {
+function TouchTypingTrainer({lessonNum, lessonTitle, lessonText, maxTime}) {
     // Lesson states
     const [isLessonActive, setIsLessonActive] = useState(false);
     const [isShowResult, setIsShowResult] = useState(false);
@@ -14,19 +14,23 @@ function TouchTypingTrainer({lessonText, maxTime}) {
     );
     const [outgoingChars, setOutgoingChars] = useState('');
     const [currentChar, setCurrentChar] = useState(lessonText.charAt(0));
+    const [isCurrentError, setIsCurrentError] = useState(false);
     const [incomingChars, setIncomingChars] = useState(lessonText.substring(1));
     const [typedCharsCount, setTypedCharsCount] = useState(0)
     // Timer
     const [passedTime, setPassedTime] = useState(0);
+    const [leftTime, setLeftTime] = useState(maxTime);
     // Statistic
     const [wordCount, setWordCount] = useState(0);
     const [cpm, setCpm] = useState(0);
     const [errorCount, setErrorCount] = useState(0);
     const [accuracy, setAccuracy] = useState(0);
 
+
     const handleLessonFinish = () => {
         setIsLessonActive(false);
-        setCpm(Math.floor(typedCharsCount / (passedTime / 60)));
+        let cpm = Math.floor(typedCharsCount / (passedTime / 60));
+        setCpm(isNaN(cpm) ? 0 : cpm);
         let accuracy = Math.floor(outgoingChars.length * 100 / typedCharsCount) ?? 0;
         setAccuracy(isNaN(accuracy) ? 0 : accuracy);
         setIsShowResult(true);
@@ -37,6 +41,7 @@ function TouchTypingTrainer({lessonText, maxTime}) {
         setOutgoingChars('');
         setIncomingChars(lessonText.substring(1));
         setCurrentChar(lessonText.charAt(0));
+        setIsCurrentError(false);
         setTypedCharsCount(0);
         setPassedTime(0);
         setWordCount(0);
@@ -47,13 +52,17 @@ function TouchTypingTrainer({lessonText, maxTime}) {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            isLessonActive && setPassedTime((passedTime) => passedTime + 1);
+            if (isLessonActive) {
+                setPassedTime((passedTime) => passedTime + 1);
+                if (maxTime !== -1)
+                    setLeftTime((leftTime) => leftTime > 0 ? leftTime - 1 : 0);
+            }
         }, 1000);
         if (maxTime !== -1 && passedTime >= maxTime) handleLessonFinish();
         return () => {
             clearInterval(interval);
         }
-    }, [isLessonActive, passedTime]);
+    }, [isLessonActive, passedTime, leftTime]);
 
     useKeyPress(key => {
         if (isShowResult) return;
@@ -69,7 +78,9 @@ function TouchTypingTrainer({lessonText, maxTime}) {
             let updatedTypedCharsCount = typedCharsCount + 1;
 
             if (key === currentChar) {
-                if (leftPadding > 0) setLeftPadding(leftPadding.substring(1));
+                if (isCurrentError) setIsCurrentError(false);
+
+                if (leftPadding.length > 0) setLeftPadding(leftPadding.substring(1));
 
                 updatedOutgoingChars += currentChar;
                 setOutgoingChars(updatedOutgoingChars);
@@ -84,6 +95,7 @@ function TouchTypingTrainer({lessonText, maxTime}) {
                 setIncomingChars(updatedIncomingChars);
             } else {
                 setErrorCount(errorCount + 1);
+                setIsCurrentError(true);
             }
 
             setTypedCharsCount(updatedTypedCharsCount);
@@ -107,20 +119,22 @@ function TouchTypingTrainer({lessonText, maxTime}) {
                 <br/>
                 <span>Accuracy: {accuracy}%</span>
                 <br/>
-                <button onClick={handleLessonRestart}>Restart</button>
+                <button style={{width: "100%"}} onClick={handleLessonRestart}>Restart
+                </button>
             </ModalWindow>
             <div className={cl.trainer}>
                 {isLessonActive
                     ?
                     <>
                         <div className={cl.timer}>
-                            {getFormattedTimeString(passedTime)}
+                            {getFormattedTimeString(maxTime === -1 ? passedTime : leftTime)}
                         </div>
                         <p className={cl.chars}>
                         <span className={cl.charsOut}>
                             {(leftPadding + outgoingChars).slice(-35)}
                         </span>
-                            <span className={cl.currChar}>{currentChar}</span>
+                            <span
+                                className={[cl.currChar, isCurrentError ? cl.currCharError : ''].join(' ')}>{currentChar}</span>
                             <span
                                 className={cl.charsIn}>{incomingChars.substring(0, 34)}</span>
                         </p>
